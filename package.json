@@ -10,7 +10,8 @@
     "ejs": "2.3.3",
     "express": "4.13.3",
     "express-session": ">0.1",
-    "body-parser": ">0.1"
+    "body-parser": ">0.1",
+    "grant-express" : "3.5.0"
   },
   "engines": {
     "node": "0.12.7"
