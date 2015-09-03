@@ -41,6 +41,10 @@ app.get('/', function (request, response) {
     response.render('pages/index');
 });
 
+app.get('/yahoolanding', function (request, response) {
+    response.render('pages/yahoo');
+});
+
 app.get('/makeYahooRequest', function(req,res){
     FantasySports
         .request(req, res)

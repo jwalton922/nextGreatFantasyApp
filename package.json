@@ -12,7 +12,7 @@
     "express-session": ">0.1",
     "body-parser": ">0.1",
     "grant-express" : "3.5.0",
-    "fantasy-sports": "0.3.0"
+    "fantasysports": "0.3.0"
   },
   "engines": {
     "node": "0.12.7"
