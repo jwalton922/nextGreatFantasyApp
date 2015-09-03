@@ -1,4 +1,4 @@
-var FantasySports = require('FantasySports');
+var FantasySports = require('fantasysports');
 var express = require('express');
 var session = require('express-session');
 var Grant = require('grant-express');
