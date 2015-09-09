@@ -35,8 +35,11 @@ app.set('view engine', 'ejs');
 
 app.get('/handle_yahoo_response', function (request, response) {
     console.log("handle_yahoo_response request: "+request);
-    for(var key in request){
-        console.log("request key: "+key+"="+request[key]);
+    for(var key in request.query){
+        console.log("request.query key: "+key+"="+request.query[key]);
+    }
+    for(var key in request.body){
+        console.log("request.body key: "+key+"="+request.body[key]);
     }
     FantasySports
         .request(request, response)
