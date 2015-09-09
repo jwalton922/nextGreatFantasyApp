@@ -50,6 +50,14 @@ app.get('/handle_yahoo_response', function (request, response) {
     for(var key in request.session.grant){
         console.log("request.session.grant key: "+key+"="+request.session.grant[key]);
     }
+    
+    for(var key in request.session.grant.step1){
+        console.log("request.session.grant.step1 key: "+key+"="+request.session.grant.step1[key]);
+    }
+    
+    for(var key in request.session.grant.response){
+        console.log("request.session.grant.response key: "+key+"="+request.session.grant.response[key]);
+    }
     FantasySports
         .request(request, response)
         .api('http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json')
