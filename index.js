@@ -41,6 +41,9 @@ app.get('/handle_yahoo_response', function (request, response) {
     for(var key in request.body){
         console.log("request.body key: "+key+"="+request.body[key]);
     }
+    for(var key in request.params){
+        console.log("request.params key: "+key+"="+request.params[key]);
+    }
     FantasySports
         .request(request, response)
         .api('http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json')
