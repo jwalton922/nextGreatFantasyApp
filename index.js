@@ -1,3 +1,4 @@
+var request = require('request');
 var FantasySports = require('fantasysports');
 var express = require('express');
 var session = require('express-session');
@@ -58,20 +59,28 @@ app.get('/handle_yahoo_response', function (request, response) {
     for(var key in request.session.grant.response){
         console.log("request.session.grant.response key: "+key+"="+request.session.grant.response[key]);
     }
-    FantasySports
-        .request(request, response)
-        .api('http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json')
-        .done(function(data) {
-            var leagueData = data.fantasy_content.users[0].user[1].games[0].game[1].leagues,
-                leagues = [];
-
-            _.each(leagueData, function(value) {
-                if (value.league) leagues.push(value.league[0]);
-            });
-
-            response.json(leagues);
-        });
-    response.render('pages/yahoo');
+    var url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
+    url+="&access_token="+request.session.grant.response.access_token;
+    request(url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        console.log(body) // Show the HTML for the Google homepage. 
+        response.json(body);
+      }
+    });
+//    FantasySports
+//        .request(request, response)
+//        .api('http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json')
+//        .done(function(data) {
+//            var leagueData = data.fantasy_content.users[0].user[1].games[0].game[1].leagues,
+//                leagues = [];
+//
+//            _.each(leagueData, function(value) {
+//                if (value.league) leagues.push(value.league[0]);
+//            });
+//
+//            response.json(leagues);
+//        });
+//    response.render('pages/yahoo');
 });
 
 app.get('/', function (request, response) {
