@@ -61,11 +61,13 @@ app.get('/handle_yahoo_response', function (request, response) {
     }
     var url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
     url+="&access_token="+request.session.grant.response.access_token;
+    console.log("url="+url);
     requestModule(url, function (error, response, body) {
-      if (!error && response.statusCode == 200) {
+        console.log("error: "+error);
+        console.log("status code = "+response.statusCode);
         console.log(body) // Show the HTML for the Google homepage. 
         response.json(body);
-      }
+      
     });
 //    FantasySports
 //        .request(request, response)
