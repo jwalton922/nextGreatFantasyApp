@@ -13,7 +13,8 @@
     "body-parser": ">0.1",
     "grant-express" : "3.5.0",
     "fantasysports": "0.3.0",
-    "request" : "2.61.0"
+    "request" : "2.61.0",
+    "mongodb" : ">=2.0.14"
   },
   "engines": {
     "node": "0.12.7"
