@@ -94,7 +94,7 @@ app.get('/handle_yahoo_response', function (request, response) {
 //            console.log("error inserting user? "+err);            
 //        });
         
-        response.json(bodyJson);
+        response.json(body);
     });
 //    FantasySports
 //        .request(request, response)
