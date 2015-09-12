@@ -91,11 +91,10 @@ app.get('/handle_yahoo_response', function (request, response) {
         userCollection.insert([
             userObj
         ], function (err, result) {
-            console.log("error inserting user? "+err);
-            response.json(bodyJson);
+            console.log("error inserting user? "+err);            
         });
         
-
+        response.json(bodyJson);
     });
 //    FantasySports
 //        .request(request, response)
