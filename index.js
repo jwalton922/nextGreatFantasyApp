@@ -89,7 +89,7 @@ app.get('/handle_yahoo_response', function (request, response) {
             console.log("bodyJson key: "+key+" = "+bodyJson[key]);
         }
         var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
-        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id", userId};
+        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id": userId};
         var userCollection = mongoDb.collection("users");
         userCollection.insert([
             userObj
