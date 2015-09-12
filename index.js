@@ -90,14 +90,15 @@ app.get('/handle_yahoo_response', function (request, response) {
         }
         var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
         var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId};
-//        var userCollection = mongoDb.collection("users");
-//        userCollection.insert([
-//            userObj
-//        ], function (err, result) {
-//            console.log("error inserting user? "+err);            
-//        });
+        var userCollection = mongoDb.collection("users");
+        userCollection.insert([
+            userObj
+        ], function (err, result) {
+            console.log("error inserting user? "+err);            
+            response.json(body);
+        });
         
-        response.json(body);
+        
     });
 //    FantasySports
 //        .request(request, response)
