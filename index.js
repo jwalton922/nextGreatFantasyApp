@@ -83,7 +83,7 @@ app.get('/handle_yahoo_response', function (request, response) {
         var bodyJson = body;
         if (typeof body === "string") {
             console.log("converted body string to json");
-            bodyJson = JSON.stringify(eval("(" + body + ")"));
+            bodyJson = eval("(" + body + ")");
         }
         for(var key in bodyJson){
             console.log("bodyJson key: "+key+" = "+bodyJson[key]);
