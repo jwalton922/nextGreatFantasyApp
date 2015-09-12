@@ -83,7 +83,7 @@ app.get('/handle_yahoo_response', function (request, response) {
         var bodyJson = body;
         if (typeof body === "string") {
             console.log("converted body string to json");
-            bodyJson = eval(body);
+            bodyJson = JSON.stringify(eval("(" + body + ")"));
         }
         var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
         var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId};
