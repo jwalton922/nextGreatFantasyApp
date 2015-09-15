@@ -5,6 +5,8 @@ var session = require('express-session');
 var Grant = require('grant-express');
 var MongoClient = require('mongodb').MongoClient
         , assert = require('assert');
+var passport = require('passport');
+var YahooStrategy = require('passport-yahoo').Strategy;
 
 // Connection URL
 var url = process.env.MONGOLAB_URI;
@@ -31,6 +33,27 @@ var grant = new Grant(
             "provider2": {}
         }
 );
+
+passport.use(new YahooStrategy({
+    returnURL: 'http://localhost:3000/auth/yahoo/return',
+    realm: 'http://localhost:3000/'
+},
+function (identifier, profile, done) {
+    // asynchronous verification, for effect...
+    process.nextTick(function () {
+
+        // To keep the example simple, the user's Yahoo profile is returned to
+        // represent the logged-in user.  In a typical application, you would want
+        // to associate the Yahoo account with a user record in your database,
+        // and return that user instead.
+        profile.identifier = identifier;
+        console.log(identifier);
+        console.log(JSON.stringify(profile));
+        return done(null, profile);
+    });
+}
+));
+
 var app = express();
 
 app.set('port', (process.env.PORT || 5000));
@@ -45,6 +68,29 @@ app.use(grant)
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+// GET /auth/yahoo
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  The first step in Yahoo authentication will involve redirecting
+//   the user to yahoo.com.  After authenticating, Yahoo will redirect the
+//   user back to this application at /auth/yahoo/return
+app.get('/auth/yahoo',
+        passport.authenticate('yahoo', {failureRedirect: '/login'}),
+        function (req, res) {
+            console.log("/auth/yahoo called");
+            res.redirect('/');
+        });
+
+// GET /auth/yahoo/return
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  If authentication fails, the user will be redirected back to the
+//   login page.  Otherwise, the primary route function function will be called,
+//   which, in this example, will redirect the user to the home page.
+app.get('/auth/yahoo/return',
+        passport.authenticate('yahoo', {failureRedirect: '/login'}),
+        function (req, res) {
+            console.log("/auth/yahoo/return called");
+            res.redirect('/');
+        });
 app.get('/handle_yahoo_response', function (request, response) {
     console.log("handle_yahoo_response request: " + request);
     for (var key in request.query) {
@@ -85,20 +131,20 @@ app.get('/handle_yahoo_response', function (request, response) {
             console.log("converted body string to json");
             bodyJson = eval("(" + body + ")");
         }
-        for(var key in bodyJson){
-            console.log("bodyJson key: "+key+" = "+bodyJson[key]);
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
         }
         var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
-        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id": userId};
+        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id": userId, grant: request.session.grant};
         var userCollection = mongoDb.collection("users");
         userCollection.insert([
             userObj
         ], function (err, result) {
-            console.log("error inserting user? "+err);            
+            console.log("error inserting user? " + err);
             response.json(body);
         });
-        
-        
+
+
     });
 //    FantasySports
 //        .request(request, response)
