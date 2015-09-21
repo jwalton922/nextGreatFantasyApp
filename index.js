@@ -234,8 +234,8 @@ app.get('/login', function (req, res) {
     var password = req.query.password;
     var userCollection = mongoDb.collection("users");
     userCollection.find({username: username}).toArray(function (err, docs) {
-        if (docs.length === 0) {
-            var userObj = {username: username, password: password};
+        if (docs.length === 1) {
+            var userObj = docs[0];
             if (userObj.password === password) {
                 req.session.user = userObj;
                 res.send(userObj);
