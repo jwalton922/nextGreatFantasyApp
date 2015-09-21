@@ -39,6 +39,7 @@
   },
   "scripts": {
     "test": "grunt test",
+    "preinstall": "echo ZXZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ\n\n\n",
     "postinstall": "bower install"
   }
 }
