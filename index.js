@@ -134,8 +134,19 @@ app.get('/callback', function (request, response) {
     } else {
         console.log("no request.session.grant.response");
     }
-
-    response.sendStatus(200);
+    var userObj = {username: "notFound"};
+    if (request.session.user) {
+        var userObj = request.session.user;
+        userObj.grant = request.session.grant;
+        var userCollection = mongoDb.collection("users");
+        userCollection.updateOne({username: userObj.username}, {$set: {grant: request.session.grant}}, function (err, r) {
+            console.log("Error updating user? " + err);
+            response.json(userObj);
+        });
+    } else {
+        response.sendStatus(400);
+    }
+  
 });
 
 app.get('/handle_yahoo_response', function (request, response) {
@@ -164,7 +175,7 @@ app.get('/handle_yahoo_response', function (request, response) {
         console.log("request.session.grant.response key: " + key + "=" + request.session.grant.response[key]);
     }
 
-    var userObj = request.session.userObj;
+    var userObj = request.session.user;
     userObj.grant = request.session.grant;
     var userCollection = mongoDb.collection("users");
     userCollection.updateOne({username: userObj.username}, {$set: {grant: request.session.grant}}, function (err, r) {
