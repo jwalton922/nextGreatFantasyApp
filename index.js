@@ -63,7 +63,7 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'));
 app.use(session({secret: 'grant'}))
 // mount grant 
-app.use(grant)
+app.use(grant);
 
 // views is directory for all template files
 app.set('views', __dirname + '/views');
@@ -92,6 +92,13 @@ app.get('/auth/yahoo/return',
             console.log("/auth/yahoo/return called");
             res.redirect('/');
         });
+        
+app.get('/connect_yahoo', function (req, res) {
+  // generate random state parameter on each authorization attempt
+  console.log("User: "+JSON.stringify(req.session.userObj));
+  res.redirect('/connect/yahoo?username=' + req.session.userObj.username);
+});
+
 app.get('/handle_yahoo_response', function (request, response) {
     console.log("handle_yahoo_response request: " + request);
     for (var key in request.query) {
