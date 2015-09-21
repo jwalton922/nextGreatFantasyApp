@@ -100,7 +100,7 @@ app.get('/connect_yahoo', function (req, res) {
 });
 
 app.get('/callback', function (request, response) {
-    console.log("handle_yahoo_response request: " + request);
+    console.log("callback route request: " + request);
     for (var key in request.query) {
         console.log("request.query key: " + key + "=" + request.query[key]);
     }
