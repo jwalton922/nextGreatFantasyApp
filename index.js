@@ -92,11 +92,50 @@ app.get('/auth/yahoo/return',
             console.log("/auth/yahoo/return called");
             res.redirect('/');
         });
-        
+
 app.get('/connect_yahoo', function (req, res) {
-  // generate random state parameter on each authorization attempt
-  console.log("User: "+JSON.stringify(req.session.userObj));
-  res.redirect('/connect/yahoo?username=' + req.session.userObj.username);
+    // generate random state parameter on each authorization attempt
+    console.log("User: " + JSON.stringify(req.session.userObj));
+    res.redirect('/connect/yahoo?username=' + req.session.userObj.username);
+});
+
+app.get('/callback', function (request, response) {
+    console.log("handle_yahoo_response request: " + request);
+    for (var key in request.query) {
+        console.log("request.query key: " + key + "=" + request.query[key]);
+    }
+    for (var key in request.body) {
+        console.log("request.body key: " + key + "=" + request.body[key]);
+    }
+    for (var key in request.params) {
+        console.log("request.params key: " + key + "=" + request.params[key]);
+    }
+    for (var key in request.session) {
+        console.log("request.session key: " + key + "=" + request.session[key]);
+    }
+    if (request.session.grant) {
+        for (var key in request.session.grant) {
+            console.log("request.session.grant key: " + key + "=" + request.session.grant[key]);
+        }
+    } else {
+        console.log("no request.session.grant");
+    }
+    if (request.session.grant.step1) {
+        for (var key in request.session.grant.step1) {
+            console.log("request.session.grant.step1 key: " + key + "=" + request.session.grant.step1[key]);
+        }
+    } else {
+        console.log("no request.session.grant.step1");
+    }
+    if (request.session.grant.response) {
+        for (var key in request.session.grant.response) {
+            console.log("request.session.grant.response key: " + key + "=" + request.session.grant.response[key]);
+        }
+    } else {
+        console.log("no request.session.grant.response");
+    }
+
+    response.sendStatus(200);
 });
 
 app.get('/handle_yahoo_response', function (request, response) {
@@ -124,15 +163,15 @@ app.get('/handle_yahoo_response', function (request, response) {
     for (var key in request.session.grant.response) {
         console.log("request.session.grant.response key: " + key + "=" + request.session.grant.response[key]);
     }
-    
+
     var userObj = request.session.userObj;
     userObj.grant = request.session.grant;
     var userCollection = mongoDb.collection("users");
-    userCollection.updateOne({username: userObj.username},{$set : {grant: request.session.grant}}, function(err, r){
-        console.log("Error updating user? "+err);
+    userCollection.updateOne({username: userObj.username}, {$set: {grant: request.session.grant}}, function (err, r) {
+        console.log("Error updating user? " + err);
         response.json(userObj);
     });
-    
+
 //    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
 //    var access_token = request.session.grant.response.access_token;
 //    var access_secret = request.session.grant.response.access_secret;
