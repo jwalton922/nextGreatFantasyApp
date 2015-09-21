@@ -1,6 +1,7 @@
 var requestModule = require('request');
 var FantasySports = require('fantasysports');
 var express = require('express');
+var assert = require('assert');
 var session = require('express-session');
 var Grant = require('grant-express');
 var MongoClient = require('mongodb').MongoClient
@@ -116,36 +117,45 @@ app.get('/handle_yahoo_response', function (request, response) {
     for (var key in request.session.grant.response) {
         console.log("request.session.grant.response key: " + key + "=" + request.session.grant.response[key]);
     }
-    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
-    var access_token = request.session.grant.response.access_token;
-    var access_secret = request.session.grant.response.access_secret;
-
-    url += "&access_token=" + access_token;
-    console.log("url=" + url);
-    requestModule(url, function (error, fantasyresponse, body) {
-        console.log("error: " + error);
-        console.log("status code = " + fantasyresponse.statusCode);
-        console.log(body) // Show the HTML for the Google homepage. 
-        var bodyJson = body;
-        if (typeof body === "string") {
-            console.log("converted body string to json");
-            bodyJson = eval("(" + body + ")");
-        }
-        for (var key in bodyJson) {
-            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
-        }
-        var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
-        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id": userId, grant: request.session.grant};
-        var userCollection = mongoDb.collection("users");
-        userCollection.insert([
-            userObj
-        ], function (err, result) {
-            console.log("error inserting user? " + err);
-            response.json(body);
-        });
-
-
+    
+    var userObj = request.session.userObj;
+    userObj.grant = request.session.grant;
+    var userCollection = mongoDb.collection("users");
+    userCollection.updateOne({username: userObj.username},{$set : {grant: request.session.grant}}, function(err, r){
+        console.log("Error updating user? "+err);
+        response.json(userObj);
     });
+    
+//    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
+//    var access_token = request.session.grant.response.access_token;
+//    var access_secret = request.session.grant.response.access_secret;
+//
+//    url += "&access_token=" + access_token;
+//    console.log("url=" + url);
+//    requestModule(url, function (error, fantasyresponse, body) {
+//        console.log("error: " + error);
+//        console.log("status code = " + fantasyresponse.statusCode);
+//        console.log(body) // Show the HTML for the Google homepage. 
+//        var bodyJson = body;
+//        if (typeof body === "string") {
+//            console.log("converted body string to json");
+//            bodyJson = eval("(" + body + ")");
+//        }
+//        for (var key in bodyJson) {
+//            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+//        }
+//        var userId = bodyJson.fantasy_content.users["0"].user[0].guid;
+//        var userObj = {access_token: access_token, access_secret: access_secret, yahoo_id: userId, "_id": userId, grant: request.session.grant};
+//        var userCollection = mongoDb.collection("users");
+//        userCollection.insert([
+//            userObj
+//        ], function (err, result) {
+//            console.log("error inserting user? " + err);
+//            response.json(body);
+//        });
+//
+//
+//    });
 //    FantasySports
 //        .request(request, response)
 //        .api('http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json')
@@ -163,7 +173,24 @@ app.get('/handle_yahoo_response', function (request, response) {
 });
 
 app.get('/', function (request, response) {
-    response.render('pages/index');
+    var options = {
+        root: __dirname + '/public/',
+        dotfiles: 'deny',
+        headers: {
+            'x-timestamp': Date.now(),
+            'x-sent': true
+        }
+    };
+    var fileName = "app/index.html";
+    response.sendFile(fileName, options, function (err) {
+        if (err) {
+            console.log(err);
+            res.status(err.status).end();
+        }
+        else {
+            console.log('Sent:', fileName);
+        }
+    });
 });
 
 app.get('/yahoolanding', function (request, response) {
@@ -200,6 +227,48 @@ app.get('/makeYahooRequest', function (req, res) {
 
                 res.json(leagues);
             });
+});
+
+app.get('/login', function (req, res) {
+    var username = req.query.username;
+    var password = req.query.password;
+    var userCollection = mongoDb.collection("users");
+    userCollection.find({username: username}).toArray(function (err, docs) {
+        if (docs.length === 0) {
+            var userObj = {username: username, password: password};
+            if (userObj.password === password) {
+                req.session.user = userObj;
+                res.send(userObj);
+            } else {
+                res.sendStatus(400)
+            }
+        } else {
+            console.log("Found " + docs.length + " documents with username: " + username);
+            res.sendStatus(400);
+        }
+    });
+});
+
+app.get('/register', function (req, res) {
+    var username = req.query.username;
+    var password = req.query.password;
+    console.log("username: " + username + " password: " + password);
+    var userCollection = mongoDb.collection("users");
+    userCollection.find({username: username}).toArray(function (err, docs) {
+        if (docs.length === 0) {
+            var userObj = {username: username, password: password};
+            userCollection.insert([
+                userObj
+            ], function (err, result) {
+                console.log("error inserting user? " + err);
+                req.session.user = userObj;
+                res.sendStatus(200);
+            });
+        } else {
+            console.log("Found " + docs.length + " documents with username: " + username);
+            res.sendStatus(400);
+        }
+    });
 });
 
 app.listen(app.get('port'), function () {

@@ -26,6 +26,9 @@ angular
       .when('/about', {
         templateUrl: '/app/views/about.html',
         controller: 'AboutCtrl'
+      }).when('/home',{
+          templateUrl: '/app/views/home.html',
+          controller: 'HomeCtrl'
       })
       .otherwise({
         redirectTo: '/'
