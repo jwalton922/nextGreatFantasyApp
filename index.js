@@ -416,12 +416,12 @@ function renewYahooTokens(userObj){
             "&oauth_timestamp="+oauth_timestamp+
             "&oauth_session_handle="+oauth_session_handle;
     console.log("renew token url: "+urlWithQureryParams);
-    var response = rp.get(urlWithQureryParams).then(function(body){
+    var renewResponse = rp.get(urlWithQureryParams).then(function(body){
         console.log("Token renew response: "+JSON.stringify(body));
         return body;
     });
     
-    return response;
+    return renewResponse;
 }
 
 app.get('/renewYahooToken', function(request, response){
