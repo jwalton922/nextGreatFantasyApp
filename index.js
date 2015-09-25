@@ -400,12 +400,12 @@ function renewYahooTokens(userObj){
     var oauth_nonce = new Date().getTime() + '' + new Date().getMilliseconds(); 
     var oauth_consumer_key = yahoo_consumer_key
     var oauth_signature_method = 'plaintext'; 
-    var oauth_signature = yahoo_consumer_secret+'&'+userObj.grant.step1.oauth_token_secret;
+    var oauth_signature = yahoo_consumer_secret+'%26'+userObj.grant.step1.oauth_token_secret;
     var oauth_version = '1.0';
     var oauth_token = userObj.grant.step1.oauth_token;
     var oauth_timestamp= new Date().getTime();
     var oauth_session_handle = userObj.grant.response.raw.oauth_session_handle;
-    
+    console.log("signature: "+oauth_signature);
     var urlWithQureryParams = url+
             "?oauth_nonce="+oauth_nonce+
             "&oauth_consumer_key="+oauth_consumer_key+
@@ -415,7 +415,7 @@ function renewYahooTokens(userObj){
             "&oauth_token="+oauth_token+
             "&oauth_timestamp="+oauth_timestamp+
             "&oauth_session_handle="+oauth_session_handle;
-    
+    console.log("renew token url: "+urlWithQureryParams);
     rp.get(urlWithQureryParams).then(function(body){
         console.log("Token renew response: "+JSON.stringify(body));
         return body;
