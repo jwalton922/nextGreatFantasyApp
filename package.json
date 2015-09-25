@@ -14,7 +14,7 @@
     "body-parser": ">0.1",
     "grant-express" : "3.5.0",
     "fantasysports": "0.3.0",
-    "request" : "2.61.0",
+    "request-promise" : "0.4.3",
     "mongodb" : ">=2.0.14",
     "passport": ">=0.3.0",
     "passport-yahoo": ">=0.3.0",

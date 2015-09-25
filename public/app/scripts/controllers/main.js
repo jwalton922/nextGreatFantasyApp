@@ -9,7 +9,7 @@
  */
 angular.module('nextGreatFantasyAppApp')
         .controller('MainCtrl', ["$scope","$location","$log","$http", "UserService",function ($scope, $location, $log, $http, UserService) {
-                $scope.account = {email: "test", password: "pword"};
+                $scope.account = {email: "jwalton922@gmail.com", password: "password"};
                 $scope.userObj = null;
                 $scope.awesomeThings = [
                     'HTML5 Boilerplate',

@@ -1,4 +1,4 @@
-var requestModule = require('request');
+var rp = require('request-promise')
 var FantasySports = require('fantasysports');
 var express = require('express');
 var assert = require('assert');
@@ -17,6 +17,10 @@ MongoClient.connect(url, function (err, db) {
     assert.equal(null, err);
     mongoDb = db;
 });
+
+var yahoo_consumer_key = "dj0yJmk9OVh1eXRma3dtUnFYJmQ9WVdrOVl6bEhkRXRQTTJVbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD01OA--";
+var yahoo_consumer_secret = "7ccf9d99b2e49136029d2c35e585cc967cb53dae";
+
 var grant = new Grant(
         {
             "server": {
@@ -146,7 +150,169 @@ app.get('/callback', function (request, response) {
     } else {
         response.sendStatus(400);
     }
-  
+
+});
+
+app.get('/getLeagueData',function(request,response){
+    var access_token = request.session.user.grant.response.access_token;
+    var access_secret = request.session.user.grant.response.access_secret;
+    var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
+    console.log('yahooId=' + yahooId);
+    var leagues = request.session.user.leagues;
+    
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/league/'+leagues[0].league_key+'?format=json&oauth_version="1.0"';
+    url += "&access_token=" + access_token;
+    console.log("url=" + url);
+    requestModule(url, function (error, fantasyresponse, body) {
+        console.log("error: " + error);
+        console.log("status code = " + fantasyresponse.statusCode);
+        console.log(body) // Show the HTML for the Google homepage. 
+        var bodyJson = body;
+        if (typeof body === "string") {
+            console.log("converted body string to json");
+            bodyJson = eval("(" + body + ")");
+        }
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+        }
+        response.json(bodyJson);
+    });
+});
+
+app.get('/getNFLGameList',function(request,response){
+    var access_token = request.session.user.grant.response.access_token;
+    var access_secret = request.session.user.grant.response.access_secret;
+    var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
+    console.log('yahooId=' + yahooId);
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/games;game_codes=nfl?format=json&oauth_version="1.0"';
+    url += "&access_token=" + access_token;
+    console.log("url=" + url);
+    requestModule(url, function (error, fantasyresponse, body) {
+        console.log("error: " + error);
+        console.log("status code = " + fantasyresponse.statusCode);
+        console.log(body) // Show the HTML for the Google homepage. 
+        var bodyJson = body;
+        if (typeof body === "string") {
+            console.log("converted body string to json");
+            bodyJson = eval("(" + body + ")");
+        }
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+        }
+       
+       response.json(bodyJson);
+        
+    });
+});
+
+app.get('/getMatchups',function(request,response){
+    var access_token = request.session.user.grant.response.access_token;
+    var access_secret = request.session.user.grant.response.access_secret;
+    var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
+    console.log('yahooId=' + yahooId);
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/team/348.l.373304.t.3/matchups?format=json&oauth_version="1.0"';
+    url += "&access_token=" + access_token;
+    console.log("url=" + url);
+    requestModule(url, function (error, fantasyresponse, body) {
+        console.log("error: " + error);
+        console.log("status code = " + fantasyresponse.statusCode);
+        console.log(body) // Show the HTML for the Google homepage. 
+        var bodyJson = body;
+        if (typeof body === "string") {
+            console.log("converted body string to json");
+            bodyJson = eval("(" + body + ")");
+        }
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+        }
+       
+       response.json(bodyJson);
+        
+    });
+});
+
+app.get('/getTeams', function (request, response) {
+
+    var access_token = request.session.user.grant.response.access_token;
+    var access_secret = request.session.user.grant.response.access_secret;
+    var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
+    console.log('yahooId=' + yahooId);
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/teams?format=json&oauth_version="1.0"';
+    url += "&access_token=" + access_token;
+    console.log("url=" + url);
+    requestModule(url, function (error, fantasyresponse, body) {
+        console.log("error: " + error);
+        console.log("status code = " + fantasyresponse.statusCode);
+        console.log(body) // Show the HTML for the Google homepage. 
+        var bodyJson = body;
+        if (typeof body === "string") {
+            console.log("converted body string to json");
+            bodyJson = eval("(" + body + ")");
+        }
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+        }
+       
+       response.json(bodyJson);
+        
+    });
+});
+
+app.get('/getFantasyHistory', function (request, response) {
+
+    var access_token = request.session.user.grant.response.access_token;
+    var access_secret = request.session.user.grant.response.access_secret;
+    var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
+    console.log('yahooId=' + yahooId);
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json&oauth_version="1.0"';
+    url += "&access_token=" + access_token;
+    console.log("url=" + url);
+    requestModule(url, function (error, fantasyresponse, body) {
+        console.log("error: " + error);
+        console.log("status code = " + fantasyresponse.statusCode);
+        console.log(body) // Show the HTML for the Google homepage. 
+        var bodyJson = body;
+        if (typeof body === "string") {
+            console.log("converted body string to json");
+            bodyJson = eval("(" + body + ")");
+        }
+        for (var key in bodyJson) {
+            console.log("bodyJson key: " + key + " = " + bodyJson[key]);
+        }
+        var games = bodyJson.fantasy_content.users[0].user[1].games;
+        for (var key in games) {
+            if(!games[key].game){
+                continue;
+            }
+            console.log("games key: " + key);
+            var game = games[key];
+            console.log("Game:\n"+JSON.stringify(game,true));
+            if (game.game[0].game_key === "348") {
+                var leagues = game.game[1].leagues;
+                var leagueData = [];
+                for (var leagueKey in leagues) {
+                    if(!leagues[leagueKey].league){
+                        continue;
+                    }
+                    console.log("Trying to to get league from leagueKey="+leagueKey);
+                    console.log(leagueKey+"= "+leagues[leagueKey]);
+                    var someLeague = leagues[leagueKey].league[0];
+                    console.log("Found league data: " + JSON.stringify(someLeague));
+                    leagueData.push(someLeague);
+                }
+                var userObj = request.session.user;
+                userObj.leagues = leagueData
+                var userCollection = mongoDb.collection("users");
+                userCollection.updateOne({username: userObj.username}, {$set: {leagues: leagueData}}, function (err, r) {
+                    console.log("Error updating user? " + err);
+                    response.json(userObj);
+                });
+            } else {
+                console.log("Unknow game key: " + game.game[0].game_key);
+            }
+        }
+        
+    });
 });
 
 app.get('/handle_yahoo_response', function (request, response) {
@@ -229,6 +395,41 @@ app.get('/handle_yahoo_response', function (request, response) {
 //    response.render('pages/yahoo');
 });
 
+function renewYahooTokens(userObj){
+    var url = "https://api.login.yahoo.com/oauth/v2/get_token";
+    var oauth_nonce = new Date().getTime() + '' + new Date().getMilliseconds(); 
+    var oauth_consumer_key = yahoo_consumer_key
+    var oauth_signature_method = 'plaintext'; 
+    var oauth_signature = yahoo_consumer_secret+'&'+userObj.grant.step1.oauth_token_secret;
+    var oauth_version = '1.0';
+    var oauth_token = userObj.grant.step1.oauth_token;
+    var oauth_timestamp= new Date().getTime();
+    var oauth_session_handle = userObj.grant.response.raw.oauth_session_handle;
+    
+    var urlWithQureryParams = url+
+            "?oauth_nonce="+oauth_nonce+
+            "&oauth_consumer_key="+oauth_consumer_key+
+            "&oauth_signature_method="+oauth_signature_method+
+            "&oauth_signature="+oauth_signature+
+            "&oauth_version="+oauth_version+
+            "&oauth_token="+oauth_token+
+            "&oauth_timestamp="+oauth_timestamp+
+            "&oauth_session_handle="+oauth_session_handle;
+    
+    rp.get(urlWithQureryParams).then(function(body){
+        console.log("Token renew response: "+JSON.stringify(body));
+        return body;
+    });
+    
+    
+}
+
+app.get('/renewYahooToken', function(request, response){
+    
+    var newTokenData = renewYahooTokens(request.session.user);
+    response.json(newTokenData);
+});
+
 app.get('/', function (request, response) {
     var options = {
         root: __dirname + '/public/',
@@ -267,6 +468,16 @@ app.get('/yahoolanding', function (request, response) {
                 response.json(leagues);
             });
     response.render('pages/yahoo');
+});
+
+app.get('/requestYahooSync', function(req,res){
+    var user = req.session.user;
+    if(user == null){
+        console.log("No user in session");
+        res.sendStatus(500);
+    }
+    
+    
 });
 
 app.get('/makeYahooRequest', function (req, res) {
@@ -326,6 +537,15 @@ app.get('/register', function (req, res) {
             res.sendStatus(400);
         }
     });
+});
+
+app.get('/getUser', function (req, res) {
+
+    var userObj = {username: "notFound"};
+    if (req.session.user) {
+        userObj = req.session.user;
+    }
+    res.json(req.session.user);
 });
 
 app.listen(app.get('port'), function () {
