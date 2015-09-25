@@ -402,7 +402,7 @@ function renewYahooTokens(userObj){
     var oauth_signature_method = 'plaintext'; 
     var oauth_signature = yahoo_consumer_secret+'%26'+userObj.grant.step1.oauth_token_secret;
     var oauth_version = '1.0';
-    var oauth_token = userObj.grant.step1.oauth_token;
+    var oauth_token = userObj.grant.response.access_token;
     var oauth_timestamp= new Date().getTime();
     var oauth_session_handle = userObj.grant.response.raw.oauth_session_handle;
     console.log("signature: "+oauth_signature);
