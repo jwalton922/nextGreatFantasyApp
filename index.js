@@ -427,6 +427,7 @@ function renewYahooTokens(userObj){
 app.get('/renewYahooToken', function(request, response){
     
     var newTokenData = renewYahooTokens(request.session.user);
+    console.log("Return from renewTokenFunction: "+JSON.stringify(newTokenData));
     response.json(newTokenData);
 });
 
