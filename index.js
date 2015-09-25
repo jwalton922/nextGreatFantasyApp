@@ -400,7 +400,7 @@ function renewYahooTokens(userObj){
     var oauth_nonce = new Date().getTime() + '' + new Date().getMilliseconds(); 
     var oauth_consumer_key = yahoo_consumer_key
     var oauth_signature_method = 'plaintext'; 
-    var oauth_signature = yahoo_consumer_secret+'%26'+userObj.grant.step1.oauth_token_secret;
+    var oauth_signature = yahoo_consumer_secret+'%26'+userObj.grant.response.access_secret;
     var oauth_version = '1.0';
     var oauth_token = userObj.grant.response.access_token;
     var oauth_timestamp= new Date().getTime();
