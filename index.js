@@ -116,6 +116,8 @@ app.use(grant);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+console.log("starting index.js");
+
 function stringToJson(string) {
     var retValue = string;
     if (typeof string === "string") {
