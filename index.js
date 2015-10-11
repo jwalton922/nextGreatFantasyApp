@@ -199,7 +199,7 @@ app.get('/callback', function (request, response) {
         var userCollection = mongoDb.collection("users");
         userCollection.updateOne({username: userObj.username}, {$set: {grant: request.session.grant}}, function (err, r) {
             console.log("Error updating user? " + err);
-            response.rediret("/#/home?readData=true");
+            response.redirect("/#/home?readData=true");
         });
     } else {
         response.sendStatus(400);
