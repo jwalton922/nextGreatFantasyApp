@@ -16,6 +16,23 @@ angular.module('nextGreatFantasyAppApp')
                     'AngularJS',
                     'Karma'
                 ];
+                
+                $scope.obbWsTestConnect = function(){
+                     $scope.ws = new WebSocket("ws://localhost:8080/prospectorWs");
+                    $scope.ws.onmessage = function (event) {
+                        $log.log("Web socket onmessage: " + angular.toJson(event.data));                                                
+                    };
+
+                    $scope.ws.onopen = function (event) {
+                        $log.log("Websocket onopen called: ", event);
+                        $scope.ws.send("HELLO FROM THE CLIENT");
+                        //$scope.ws.send({messagee: "onopen..."});
+                    };
+
+                    $scope.ws.onclose = function (event) {
+                        $log.log("Websocket onclose called: ", event);
+                    };
+                }
 
                 $scope.createAccount = function () {
                     console.log("Creating account called");

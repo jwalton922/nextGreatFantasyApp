@@ -1,4 +1,8 @@
-var rp = require('request-promise')
+var WebSocketServer = require("ws").Server;
+var yahooApi = require('./yahoo.js');
+var rp = require('request-promise');
+var http = require("http");
+var requestModule = require('request');
 var FantasySports = require('fantasysports');
 var express = require('express');
 var assert = require('assert');
@@ -17,6 +21,8 @@ MongoClient.connect(url, function (err, db) {
     assert.equal(null, err);
     mongoDb = db;
 });
+
+
 
 var yahoo_consumer_key = "dj0yJmk9OVh1eXRma3dtUnFYJmQ9WVdrOVl6bEhkRXRQTTJVbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD01OA--";
 var yahoo_consumer_secret = "7ccf9d99b2e49136029d2c35e585cc967cb53dae";
@@ -61,17 +67,63 @@ function (identifier, profile, done) {
 
 var app = express();
 
+var server = http.createServer(app);
+var port = process.env.PORT || 5000;
+server.listen(port);
+
+console.log("http server listening on %d", port);
+
+var wss = new WebSocketServer({server: server});
+console.log("websocket server created")
+
+wss.on("connection", function (ws) {
+    var request = ws.upgradeReq;
+    var response = {writeHead: {}};
+    var user = null;
+    sessionHandler(request, response, function (err) {
+        user = request.session.user;
+        console.log("websocket connection open to user: " + JSON.stringify(user));
+    });
+
+    ws.send("test ");
+    
+    ws.on('open', function open(){
+       ws.send("server open happened") ;
+    });
+
+    ws.on('message', function(message){
+        console.log("recevied message: "+message+" from "+user.username);
+        console.log("got web socket readFantasyData request for: "+user.username);
+        yahooApi.wsReadFantasyData(user,mongoDb, ws);
+    });
+
+
+    ws.on("close", function () {
+        console.log("websocket connection close")
+    });
+});
+
 app.set('port', (process.env.PORT || 5000));
 var bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'));
-app.use(session({secret: 'grant'}))
+var sessionHandler = session({secret: 'grant'});
+app.use(sessionHandler);
 // mount grant 
 app.use(grant);
 
 // views is directory for all template files
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+
+function stringToJson(string) {
+    var retValue = string;
+    if (typeof string === "string") {
+        retValue = eval("(" + string + ")");
+    }
+
+    return retValue;
+}
 
 // GET /auth/yahoo
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -145,7 +197,7 @@ app.get('/callback', function (request, response) {
         var userCollection = mongoDb.collection("users");
         userCollection.updateOne({username: userObj.username}, {$set: {grant: request.session.grant}}, function (err, r) {
             console.log("Error updating user? " + err);
-            response.json(userObj);
+            response.rediret("/#/home?readData=true");
         });
     } else {
         response.sendStatus(400);
@@ -153,14 +205,14 @@ app.get('/callback', function (request, response) {
 
 });
 
-app.get('/getLeagueData',function(request,response){
+app.get('/getLeagueData', function (request, response) {
     var access_token = request.session.user.grant.response.access_token;
     var access_secret = request.session.user.grant.response.access_secret;
     var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
     console.log('yahooId=' + yahooId);
     var leagues = request.session.user.leagues;
-    
-    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/league/'+leagues[0].league_key+'?format=json&oauth_version="1.0"';
+
+    var url = 'https://fantasysports.yahooapis.com/fantasy/v2/league/' + leagues[0].league_key + '?format=json&oauth_version="1.0"';
     url += "&access_token=" + access_token;
     console.log("url=" + url);
     requestModule(url, function (error, fantasyresponse, body) {
@@ -179,7 +231,7 @@ app.get('/getLeagueData',function(request,response){
     });
 });
 
-app.get('/getNFLGameList',function(request,response){
+app.get('/getNFLGameList', function (request, response) {
     var access_token = request.session.user.grant.response.access_token;
     var access_secret = request.session.user.grant.response.access_secret;
     var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
@@ -199,13 +251,13 @@ app.get('/getNFLGameList',function(request,response){
         for (var key in bodyJson) {
             console.log("bodyJson key: " + key + " = " + bodyJson[key]);
         }
-       
-       response.json(bodyJson);
-        
+
+        response.json(bodyJson);
+
     });
 });
 
-app.get('/getMatchups',function(request,response){
+app.get('/getMatchups', function (request, response) {
     var access_token = request.session.user.grant.response.access_token;
     var access_secret = request.session.user.grant.response.access_secret;
     var yahooId = request.session.user.grant.response.raw.xoauth_yahoo_guid;
@@ -225,9 +277,9 @@ app.get('/getMatchups',function(request,response){
         for (var key in bodyJson) {
             console.log("bodyJson key: " + key + " = " + bodyJson[key]);
         }
-       
-       response.json(bodyJson);
-        
+
+        response.json(bodyJson);
+
     });
 });
 
@@ -252,9 +304,9 @@ app.get('/getTeams', function (request, response) {
         for (var key in bodyJson) {
             console.log("bodyJson key: " + key + " = " + bodyJson[key]);
         }
-       
-       response.json(bodyJson);
-        
+
+        response.json(bodyJson);
+
     });
 });
 
@@ -281,21 +333,21 @@ app.get('/getFantasyHistory', function (request, response) {
         }
         var games = bodyJson.fantasy_content.users[0].user[1].games;
         for (var key in games) {
-            if(!games[key].game){
+            if (!games[key].game) {
                 continue;
             }
             console.log("games key: " + key);
             var game = games[key];
-            console.log("Game:\n"+JSON.stringify(game,true));
+            console.log("Game:\n" + JSON.stringify(game, true));
             if (game.game[0].game_key === "348") {
                 var leagues = game.game[1].leagues;
                 var leagueData = [];
                 for (var leagueKey in leagues) {
-                    if(!leagues[leagueKey].league){
+                    if (!leagues[leagueKey].league) {
                         continue;
                     }
-                    console.log("Trying to to get league from leagueKey="+leagueKey);
-                    console.log(leagueKey+"= "+leagues[leagueKey]);
+                    console.log("Trying to to get league from leagueKey=" + leagueKey);
+                    console.log(leagueKey + "= " + leagues[leagueKey]);
                     var someLeague = leagues[leagueKey].league[0];
                     console.log("Found league data: " + JSON.stringify(someLeague));
                     leagueData.push(someLeague);
@@ -311,7 +363,7 @@ app.get('/getFantasyHistory', function (request, response) {
                 console.log("Unknow game key: " + game.game[0].game_key);
             }
         }
-        
+
     });
 });
 
@@ -395,39 +447,56 @@ app.get('/handle_yahoo_response', function (request, response) {
 //    response.render('pages/yahoo');
 });
 
-function renewYahooTokens(userObj){
+function renewYahooTokens(userObj) {
     var url = "https://api.login.yahoo.com/oauth/v2/get_token";
-    var oauth_nonce = new Date().getTime() + '' + new Date().getMilliseconds(); 
+    var oauth_nonce = new Date().getTime() + '' + new Date().getMilliseconds();
     var oauth_consumer_key = yahoo_consumer_key
-    var oauth_signature_method = 'plaintext'; 
-    var oauth_signature = yahoo_consumer_secret+'%26'+userObj.grant.response.access_secret;
+    var oauth_signature_method = 'plaintext';
+    var oauth_signature = yahoo_consumer_secret + '%26' + userObj.grant.response.access_secret;
     var oauth_version = '1.0';
     var oauth_token = userObj.grant.response.access_token;
-    var oauth_timestamp= new Date().getTime();
+    var oauth_timestamp = new Date().getTime();
     var oauth_session_handle = userObj.grant.response.raw.oauth_session_handle;
-    console.log("signature: "+oauth_signature);
-    var urlWithQureryParams = url+
-            "?oauth_nonce="+oauth_nonce+
-            "&oauth_consumer_key="+oauth_consumer_key+
-            "&oauth_signature_method="+oauth_signature_method+
-            "&oauth_signature="+oauth_signature+
-            "&oauth_version="+oauth_version+
-            "&oauth_token="+oauth_token+
-            "&oauth_timestamp="+oauth_timestamp+
-            "&oauth_session_handle="+oauth_session_handle;
-    console.log("renew token url: "+urlWithQureryParams);
-    var renewResponse = rp.get(urlWithQureryParams).then(function(body){
-        console.log("Token renew response: "+JSON.stringify(body));
+    console.log("signature: " + oauth_signature);
+    var urlWithQureryParams = url +
+            "?oauth_nonce=" + oauth_nonce +
+            "&oauth_consumer_key=" + oauth_consumer_key +
+            "&oauth_signature_method=" + oauth_signature_method +
+            "&oauth_signature=" + oauth_signature +
+            "&oauth_version=" + oauth_version +
+            "&oauth_token=" + oauth_token +
+            "&oauth_timestamp=" + oauth_timestamp +
+            "&oauth_session_handle=" + oauth_session_handle;
+    console.log("renew token url: " + urlWithQureryParams);
+    var renewResponse = rp.get(urlWithQureryParams).then(function (body) {
+        console.log("Token renew response: " + JSON.stringify(body));
         return body;
     });
-    
+    console.log("after promise: " + renewResponse);
     return renewResponse;
 }
 
-app.get('/renewYahooToken', function(request, response){
-    
+function testMakeResponse(response) {
+
+    var rpReturn = rp.get('http://localhost:5000/randomBlob').then(function (body) {
+        console.log("response from randomblob: " + JSON.stringify(body));
+        response.json(stringToJson(body));
+    });
+
+}
+
+app.get("/requestPromiseTest", function (request, response) {
+    testMakeResponse(response);
+});
+
+app.get('/randomBlob', function (request, response) {
+    response.json({bob: "loblaw"});
+})
+
+app.get('/renewYahooToken', function (request, response) {
+
     var newTokenData = renewYahooTokens(request.session.user);
-    console.log("Return from renewTokenFunction: "+JSON.stringify(newTokenData));
+    console.log("Return from renewTokenFunction: " + JSON.stringify(newTokenData));
     response.json(newTokenData);
 });
 
@@ -471,14 +540,14 @@ app.get('/yahoolanding', function (request, response) {
     response.render('pages/yahoo');
 });
 
-app.get('/requestYahooSync', function(req,res){
+app.get('/requestYahooSync', function (req, res) {
     var user = req.session.user;
-    if(user == null){
+    if (user == null) {
         console.log("No user in session");
         res.sendStatus(500);
     }
-    
-    
+
+
 });
 
 app.get('/makeYahooRequest', function (req, res) {
@@ -549,8 +618,14 @@ app.get('/getUser', function (req, res) {
     res.json(req.session.user);
 });
 
-app.listen(app.get('port'), function () {
-    console.log('Node app is running on port', app.get('port'));
+app.get('/readFantasyData', function (request, response) {
+    yahooApi.getAndStoreFantasyFootballData(request.session.user, mongoDb, response);
 });
+
+//app.listen(app.get('port'), function () {
+//    console.log('Node app is running on port', app.get('port'));
+//});
+
+
 
 

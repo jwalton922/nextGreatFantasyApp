@@ -1,10 +1,12 @@
 <div>
     <a data-ng-show="userObj.userId" class="btn btn-primary">Connect to Yahoo</a>
     User obj: {{userObj}}
-    
+
     <a href="/connect/yahoo?username={{userObj.username}}">Connect to Yahoo</a>
     <div>
         <ul>
+            <li><a href="/readFantasyData" class="btn">Read Fantasy Data</a></li>
+            <li><a href="/requestPromiseTest" class="btn">Request Promise Test</a></li>
             <li><a href="/renewYahooToken" class="btn">Renew Yahoo Token</a></li>
             <li><a href="/getNFLGameList" class="btn">Get NFL Game List</a></li>
             <li><a href="/getFantasyHistory" class="btn">Make Yahoo Request</a></li>
@@ -12,6 +14,32 @@
             <li><a href="/getMatchups" class="btn">Get Matchups</a></li>
             <li><a href="/getLeagueData" class="btn">Get League Data</a></li>
         </ul>
-        
+
+    </div>
+    <div>
+        <h2>Fantasy Data</h2>
+        <button data-ng-click="requestReadOfFantasyData()">Read Fantasy Data</button>
+        <!--        <div>
+                    <h3>Games ({{gamesReceived}})</h3>
+                    <div style="border: solid 1px black" data-ng-repeat="game in fantasyGames">
+                        {{game}}
+                    </div>
+                </div>-->
+        <div>
+            <h3>Teams ({{teamsReceived}})</h3>
+            <div  style="border: solid 1px black" data-ng-repeat="(team_key,team) in fantasyTeams">
+                <h4>{{team.season}} - {{team.name}}<img height="64" width="64" src="{{team.logo.team_logo.url}}" alt="Logo"/></h4>
+                <table>
+                    <tr>
+                        <td>Number of Moves</td><td>{{team.number_of_moves}}</td>
+                        <td>Number of Trades</td><td>{{team.number_of_trades}}</td>
+                    </tr>
+                </table>                
+                <div>
+                    <h5>Season Stats</h5>
+                    {{team.seasonData}}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
