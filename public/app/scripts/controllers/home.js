@@ -14,7 +14,13 @@ angular.module('nextGreatFantasyAppApp')
                 $scope.ws = null;
                 $scope.gamesReceived = 0;
                 $scope.teamsReceived = 0;
-                
+                $scope.queryParams = $location.search();
+                $log.log("page query params: ",$scope.queryParams);
+                $scope.requestReadOnLoad = false;
+                if($scope.queryParams.readData){
+                    $scope.requestReadOnLoad = true;
+                    $log.log("requesting read of fantasy data on load");
+                }
                 
                 $scope.requestReadOfFantasyData = function () {
                     $log.log("requestReadOfFantasyData called");
@@ -62,6 +68,9 @@ angular.module('nextGreatFantasyAppApp')
 
                     $scope.ws.onopen = function (event) {
                         $log.log("Websocket onopen called: ", event);
+                        if($scope.requestReadOnLoad){
+                            $scope.requestReadOfFantasyData();
+                        }
                         //$scope.ws.send({messagee: "onopen..."});
                     };
 
@@ -74,9 +83,5 @@ angular.module('nextGreatFantasyAppApp')
                 $log.log("User obj", $scope.userObj);
 
 
-                $scope.queryParams = $location.search();
-                $log.log("page query params: ",$scope.queryParams);
-                if($scope.queryParams.readData){
-                    $scope.requestReadOfFantasyData();
-                }
+                
             }]);
